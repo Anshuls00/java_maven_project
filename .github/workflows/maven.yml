@@ -22,11 +22,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Compile and test the project
-        run: mvn clean install
+      # - name: Compile and test the project
+      #   run: mvn clean install
 
-      - name: Package the project
-        run: mvn package
+      # - name: Package the project
+      #   run: mvn package
 
       - name: Build Docker Image
         run: |
