@@ -1,4 +1,3 @@
-
 name: Simple Java CI with Manual Approval
 
 on:
@@ -22,12 +21,36 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Compile and test the project
         run: mvn clean install
+
       - name: Package the project
         run: mvn package
+
+      - name: Build Docker Image
+        run: |
+          docker build -t myapp:${{ github.sha }} .
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry (ACR)
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Tag Docker image for ACR
+        run: |
+          docker tag myapp:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+
+      - name: Push Docker Image to ACR
+        run: |
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+
       - name: Notify build success
-        run: echo "Build and package completed!"
+        run: echo "Build and package completed, Docker image pushed to ACR!"
 
 
   deploy_to_dev:
@@ -35,13 +58,15 @@ jobs:
     environment:
       name: dev
     needs: build
-    if: github.ref == 'refs/heads/dev' 
+    if: github.ref == 'refs/heads/dev'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Deploy to development
         run: echo "Deploying to development environment"
+
       - name: Notify deployment success
         run: echo "Deployment to development was successful!"
 
@@ -51,13 +76,15 @@ jobs:
     environment:
       name: uat
     needs: build
-    if: github.ref == 'refs/heads/uat' 
+    if: github.ref == 'refs/heads/uat'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Deploy to UAT
         run: echo "Deploying to UAT environment"
+
       - name: Notify deployment success
         run: echo "Deployment to UAT was successful!"
 
@@ -67,12 +94,14 @@ jobs:
     environment:
       name: production
     needs: build
-    if: github.ref == 'refs/heads/main' 
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Deploy to production
         run: echo "Deploying to production environment"
+
       - name: Notify deployment success
         run: echo "Deployment to production was successful!"
