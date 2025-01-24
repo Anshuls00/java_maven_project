@@ -2,10 +2,7 @@ FROM maven:3.8.4-openjdk-11 AS builder
 
 WORKDIR /app
 
-COPY ./.m2 /root/.m2/
-
-COPY pom.xml .
-COPY src ./src/
+COPY . .
 
 RUN echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" \
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
