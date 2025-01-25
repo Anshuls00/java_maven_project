@@ -1,0 +1,44 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-maven-app
+  labels:
+    app: java-maven-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: java-maven-app
+  template:
+    metadata:
+      labels:
+        app: java-maven-app
+    spec:
+      containers:
+      - name: java-maven-app
+         image: ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        
+---
+
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-maven-service
+spec:
+  selector:
+    app: java-maven-app
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
