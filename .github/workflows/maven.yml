@@ -113,6 +113,11 @@ jobs:
       - name: Deploy to production
         run: echo "Deploying to production environment"
 
+      - name: Log in to Azure (explicitly before AKS)
+        uses: azure/login@v1
+        with:
+             creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Set up Kubernetes Kubeconfig
         run: |
           az aks get-credentials --resource-group AnshulSinha-rg --name aks-anshul-poc
