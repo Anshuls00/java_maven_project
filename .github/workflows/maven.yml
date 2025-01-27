@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t myapp:${{ github.sha }} .
+          docker build -t myap:${{ github.sha }} .
 
       - name: Log in to Azure
         uses: azure/login@v1
@@ -44,11 +44,11 @@ jobs:
       - name: Tag Docker image for ACR
         run: |
          echo "Tagging image with: myapp:${{ github.sha }} -> ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}"
-         docker tag myapp:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+         docker tag myap:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/myap:${{ github.sha }}
 
       - name: Push Docker Image to ACR
         run: |
-          docker push ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/myap:${{ github.sha }}
 
       - name: Notify build success
         run: echo "Build and package completed, Docker image pushed to ACR!"
