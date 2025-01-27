@@ -43,8 +43,7 @@ jobs:
 
       - name: Tag Docker image for ACR
         run: |
-          echo "Tagging image with: appjava:${{ github.sha }} -> ${{ secrets.ACR_NAME }}.azurecr.io/appjava:${{ github.sha }}"
-          docker tag appjava:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/appjava:${{ github.sha }}
+          docker tag appjava:${{ github.sha }} anshulacr01.azurecr.io/appjava:${{ github.sha }}
 
       - name: Push Docker Image to ACR
         run: |
