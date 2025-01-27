@@ -66,6 +66,17 @@ jobs:
       - name: Deploy to development
         run: echo "Deploying to development environment"
 
+      - name: Set up Kubernetes Kubeconfig
+        run: |
+          az aks get-credentials --resource-group AnshulSinha-rg --name aks-anshul-poc
+
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f Deployment.yaml
+
+      - name: Notify deployment success
+        run: echo "Deployment to development was successful!"
+
       - name: Notify deployment success
         run: echo "Deployment to development was successful!"
 
@@ -82,6 +93,8 @@ jobs:
 
       - name: Deploy to UAT
         run: echo "Deploying to UAT environment"
+
+        
 
       - name: Notify deployment success
         run: echo "Deployment to UAT was successful!"
