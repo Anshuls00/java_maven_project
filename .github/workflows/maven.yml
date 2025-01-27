@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t myapp:${{ github.sha }} .
+          docker build -t appjava:${{ github.sha }} .
 
       - name: Log in to Azure
         uses: azure/login@v1
@@ -43,16 +43,15 @@ jobs:
 
       - name: Tag Docker image for ACR
         run: |
-         echo "Tagging image with: myapp:${{ github.sha }} -> ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}"
-         docker tag myapp:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+          echo "Tagging image with: appjava:${{ github.sha }} -> ${{ secrets.ACR_NAME }}.azurecr.io/appjava:${{ github.sha }}"
+          docker tag appjava:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/appjava:${{ github.sha }}
 
       - name: Push Docker Image to ACR
         run: |
-          docker push ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/appjava:${{ github.sha }}
 
       - name: Notify build success
         run: echo "Build and package completed, Docker image pushed to ACR!"
-
 
   deploy_to_dev:
     runs-on: self-hosted
@@ -71,7 +70,6 @@ jobs:
       - name: Notify deployment success
         run: echo "Deployment to development was successful!"
 
-
   deploy_to_uat:
     runs-on: self-hosted
     environment:
@@ -89,7 +87,6 @@ jobs:
       - name: Notify deployment success
         run: echo "Deployment to UAT was successful!"
 
-
   deploy_to_production:
     runs-on: self-hosted
     environment:
@@ -103,6 +100,3 @@ jobs:
 
       - name: Deploy to production
         run: echo "Deploying to production environment"
-
-      - name: Notify deployment success
-        run: echo "Deployment to production was successful!"
