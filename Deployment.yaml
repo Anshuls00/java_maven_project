@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: java-maven-app
-          image: anshulacr01.azurecr.io/appjava:v1 
+          image: anshulacr01.azurecr.io/appjava:c6acc4029c1898fcfd1f1c6057d4a624cdca5e58
           ports:
             - containerPort: 8080
           resources:
