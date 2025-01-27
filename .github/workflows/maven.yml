@@ -111,5 +111,5 @@ jobs:
 
       - name: Deploy to AKS
         run: |
-          kubectl apply -f src/Deployment.yaml
+          kubectl apply -f Deployment.yaml
 
