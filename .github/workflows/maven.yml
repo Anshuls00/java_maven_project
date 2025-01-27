@@ -47,7 +47,7 @@ jobs:
 
       - name: Push Docker Image to ACR
         run: |
-          docker push ${{ secrets.ACR_NAME }}.azurecr.io/appjava:${{ github.sha }}
+          docker push anshulacr01.azurecr.io/appjava:${{ github.sha }}
 
       - name: Notify build success
         run: echo "Build and package completed, Docker image pushed to ACR!"
