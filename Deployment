@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: java-maven-app
-         image: ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
+         image: anshulacr01.azurecr.io/myapp:${{ github.sha }}
         ports:
         - containerPort: 8080
         resources:
