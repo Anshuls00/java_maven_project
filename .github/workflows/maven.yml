@@ -112,3 +112,11 @@ jobs:
 
       - name: Deploy to production
         run: echo "Deploying to production environment"
+
+      - name: Set up Kubernetes Kubeconfig
+        run: |
+          az aks get-credentials --resource-group AnshulSinha-rg --name aks-anshul-poc
+
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f Deployment.yaml
