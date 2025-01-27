@@ -11,7 +11,12 @@ on:
       - main
       - uat
       - dev
-
+env:
+  AZURE_CONTAINER_REGISTRY: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
+  PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
+  RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+  CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+  REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
 jobs:
   build:
     runs-on: self-hosted
@@ -21,36 +26,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
       - name: Compile and test the project
         run: mvn clean install
-
       - name: Package the project
         run: mvn package
-
-      - name: Build Docker Image
-        run: |
-          docker build -t myapp:${{ github.sha }} .
-
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Log in to Azure Container Registry (ACR)
-        run: |
-          az acr login --name ${{ secrets.ACR_NAME }}
-
-      - name: Tag Docker image for ACR
-        run: |
-          docker tag myapp:${{ github.sha }} ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
-
-      - name: Push Docker Image to ACR
-        run: |
-          docker push ${{ secrets.ACR_NAME }}.azurecr.io/myapp:${{ github.sha }}
-
       - name: Notify build success
-        run: echo "Build and package completed, Docker image pushed to ACR!"
+        run: echo "Build and package completed!"
+
 
 
   deploy_to_dev:
@@ -58,17 +40,38 @@ jobs:
     environment:
       name: dev
     needs: build
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' 
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Build image on ACR
+        uses: Azure/cli@v2.1.0
+        with:
+          azcliversion: 2.29.1
+          inlineScript: |
+            az configure --defaults acr=${{ env.AZURE_CONTAINER_REGISTRY }}
+            az acr build -t -t ${{ env.REGISTRY_URL }}/${{ env.PROJECT_NAME }}:${{ github.sha }}
+      - name: Gets K8s context
+        uses: azure/aks-set-context@94ccc775c1997a3fcfbfbce3c459fec87e0ab188
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+        id: login
+      - name: Deploy to Kubernetes cluster
+        uses: Azure/k8s-deploy@v5.0.1
+        with:
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.PROJECT_NAME }}:${{ github.sha }}
+          imagepullsecrets: |
+            ${{ env.PROJECT_NAME }}
 
-      - name: Deploy to development
-        run: echo "Deploying to development environment"
-
-      - name: Notify deployment success
-        run: echo "Deployment to development was successful!"
 
 
   deploy_to_uat:
@@ -76,17 +79,38 @@ jobs:
     environment:
       name: uat
     needs: build
-    if: github.ref == 'refs/heads/uat'
+    if: github.ref == 'refs/heads/uat' 
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Build image on ACR
+        uses: Azure/cli@v2.1.0
+        with:
+          azcliversion: 2.29.1
+          inlineScript: |
+            az configure --defaults acr=${{ env.AZURE_CONTAINER_REGISTRY }}
+            az acr build -t -t ${{ env.REGISTRY_URL }}/${{ env.PROJECT_NAME }}:${{ github.sha }}
+      - name: Gets K8s context
+        uses: azure/aks-set-context@94ccc775c1997a3fcfbfbce3c459fec87e0ab188
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+        id: login
+      - name: Deploy to Kubernetes cluster
+        uses: Azure/k8s-deploy@v5.0.1
+        with:
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.PROJECT_NAME }}:${{ github.sha }}
+          imagepullsecrets: |
+            ${{ env.PROJECT_NAME }}
 
-      - name: Deploy to UAT
-        run: echo "Deploying to UAT environment"
-
-      - name: Notify deployment success
-        run: echo "Deployment to UAT was successful!"
 
 
   deploy_to_production:
@@ -94,14 +118,34 @@ jobs:
     environment:
       name: production
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' 
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Deploy to production
-        run: echo "Deploying to production environment"
-
-      - name: Notify deployment success
-        run: echo "Deployment to production was successful!"
+      - name: Azure Login
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Build image on ACR
+        uses: Azure/cli@v2.1.0
+        with:
+          azcliversion: 2.29.1
+          inlineScript: |
+            az configure --defaults acr=${{ env.AZURE_CONTAINER_REGISTRY }}
+            az acr build -t -t ${{ env.REGISTRY_URL }}/${{ env.PROJECT_NAME }}:${{ github.sha }}
+      - name: Gets K8s context
+        uses: azure/aks-set-context@94ccc775c1997a3fcfbfbce3c459fec87e0ab188
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+        id: login
+      - name: Deploy to Kubernetes cluster
+        uses: Azure/k8s-deploy@v5.0.1
+        with:
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          images: |
+            ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.PROJECT_NAME }}:${{ github.sha }}
+          imagepullsecrets: |
+            ${{ env.PROJECT_NAME }}
